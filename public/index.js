@@ -11,6 +11,7 @@ let keyBinds = {};
 document.addEventListener("keydown", (e) => {
   const idx = keyBinds[e.key];
   if (typeof idx !== "undefined") {
+    new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play();
     socket.emit("buttonClick", idx);
   }
 })
@@ -31,7 +32,9 @@ socket.on("update", (data) => {
   count = data.count;
   beatDisplay.innerText = count;
 
-  new Audio(`./resources/sounds/${soundDatas[data.sound].fileName}.mp3`).play();
+  if (!data.self) {
+    new Audio(`./resources/sounds/${soundDatas[data.sound].fileName}.mp3`).play();
+  }
 });
 
 /**
@@ -95,6 +98,7 @@ for (let i = 0; i < soundDatas.length; i++) {
   ele.style.backgroundColor = soundData.color;
   const idx = i;
   ele.addEventListener("click", () => {
+    new Audio(`./resources/sounds/${soundData.fileName}.mp3`).play();
     socket.emit("buttonClick", idx);
   });
   buttonContainer.appendChild(ele);

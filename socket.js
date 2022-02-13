@@ -11,6 +11,7 @@ module.exports = (server) => {
     socket.join("main");
 
     let lastSend = new Date().getTime();
+    let lastIdx = -1;
     const req = socket.request;
     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
     console.log("New client connection!", ip, socket.id);
@@ -21,8 +22,9 @@ module.exports = (server) => {
       console.error(error);
     });
     socket.on("buttonClick", (buttonIdx) => {
-      if (new Date().getTime() - lastSend < 75) return;
+      if (lastIdx === buttonIdx || new Date().getTime() - lastSend < 75) return;
       lastSend = new Date().getTime();
+      lastIdx = buttonIdx;
       count++;
       socket.to("main").emit("update", {
         count,

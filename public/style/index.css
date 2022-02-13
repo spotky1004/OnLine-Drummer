@@ -27,6 +27,14 @@ body {
 #beat-display {
   font-size: 0.6em;
 }
+#user-display-wrapper {
+  background-color: #111;
+
+  font-size: 1.5em;
+}
+#user-display {
+  font-size: 0.6em;
+}
 
 #button-container {
   display: flex;

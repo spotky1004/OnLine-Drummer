@@ -5,6 +5,7 @@ const socket = io();
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const beatDisplay = document.getElementById("beat-display");
+const userDisplay = document.getElementById("user-display");
 
 /** @type {Object<string, number>} */
 let keyBinds = {};
@@ -31,6 +32,7 @@ socket.on("update", (data) => {
   });
   count = data.count;
   beatDisplay.innerText = count;
+  userDisplay.innerText = data.userCount;
 
   if (!data.self) {
     new Audio(`./resources/sounds/${soundDatas[data.sound].fileName}.mp3`).play();

@@ -6,13 +6,13 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const beatDisplay = document.getElementById("beat-display");
 
+/** @type {Object<string, number>} */
+let keyBinds = {};
 document.addEventListener("keydown", (e) => {
-  const key = e.key;
-  if (parseInt(key) !== NaN) {
-    const idx = parseInt(key);
-    if (idx > soundDatas.length || idx === 0) return;
-    new Audio(`./resources/sounds/${soundDatas[idx-1].fileName}.mp3`).play();
-    socket.emit("buttonClick", idx-1);
+  const idx = keyBinds[e.key];
+  if (typeof idx !== "undefined") {
+    new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play();
+    socket.emit("buttonClick", idx);
   }
 })
 
@@ -42,50 +42,59 @@ socket.on("update", (data) => {
  * @property {string} color
  * @property {string} fileName
  * @property {string} displayName
+ * @property {string} keyBind
  */
 /** @type {SoundData[]} */
 const soundDatas = [
   {
-    fileName: "crash",
-    displayName: "Crash",
-    color: "#fc7303"
+    fileName: "ride",
+    displayName: "Ride",
+    color: "#515203",
+    keyBind: "d"
   },
   {
     fileName: "hat",
     displayName: "Hat",
-    color: "#ace35f"
-  },
-  {
-    fileName: "kick",
-    displayName: "Kick",
-    color: "#445263"
+    color: "#ace35f",
+    keyBind: "f"
   },
   {
     fileName: "openhat",
     displayName: "Openhat",
-    color: "#3eab8d"
+    color: "#3eab8d",
+    keyBind: "g"
+  },
+  {
+    fileName: "crash",
+    displayName: "Crash",
+    color: "#fc7303",
+    keyBind: "h"
+  },
+  {
+    fileName: "kick",
+    displayName: "Kick",
+    color: "#445263",
+    keyBind: "j"
   },
   {
     fileName: "snare",
-    displayName: "Snare",
-    color: "#564463"
+    displayName: "Snare 1",
+    color: "#564463",
+    keyBind: "k"
   },
   {
     fileName: "snare2",
     displayName: "Snare 2",
-    color: "#634462"
+    color: "#634462",
+    keyBind: "l"
   },
-  {
-    fileName: "ride",
-    displayName: "Ride",
-    color: "#515203"
-  }
 ];
 const buttonContainer = document.getElementById("button-container");
 for (let i = 0; i < soundDatas.length; i++) {
   const soundData = soundDatas[i];
   const ele = document.createElement("div");
-  ele.innerText = `${soundData.displayName} (${i+1})`;
+  keyBinds[soundData.keyBind] = i;
+  ele.innerText = `${soundData.displayName} (${soundData.keyBind})`;
   ele.style.backgroundColor = soundData.color;
   const idx = i;
   ele.addEventListener("click", () => {

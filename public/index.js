@@ -12,7 +12,7 @@ document.addEventListener("keydown", (e) => {
     const idx = parseInt(key);
     if (idx > soundDatas.length || idx === 0) return;
     new Audio(`./resources/sounds/${soundDatas[idx-1].fileName}.mp3`).play();
-    socket.emit("buttonClick", idx);
+    socket.emit("buttonClick", idx-1);
   }
 })
 

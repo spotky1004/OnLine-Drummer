@@ -22,7 +22,7 @@ module.exports = (server) => {
       console.error(error);
     });
     socket.on("buttonClick", (buttonIdx) => {
-      if (lastIdx === buttonIdx || new Date().getTime() - lastSend < 75) return;
+      if (lastIdx === buttonIdx && new Date().getTime() - lastSend < 75) return;
       lastSend = new Date().getTime();
       lastIdx = buttonIdx;
       count++;

@@ -17,14 +17,6 @@ const emitButtonClick = (type, idx) => {
   });
 }
 
-/** @type {HTMLCanvasElement} */
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const beatDisplay = document.getElementById("beat-display");
-const userDisplay = document.getElementById("user-display");
-
-/** @type {Object<string, number>} */
-let keyBinds = {};
 let inKeybindMode = -1;
 let ctrlPressed = false;
 document.addEventListener("keydown", (e) => {
@@ -38,8 +30,8 @@ document.addEventListener("keydown", (e) => {
     ctrlPressed = true;
   } else if (inKeybindMode !== -1) {
     const data = soundDatas[inKeybindMode];
-    const ele = document.querySelector(`#beat-button-container > div:nth-child(${inKeybindMode+1})`);
-    ele.innerText = `${data.displayName} (${e.key})`;
+    const ele = beatButtonElements[inKeybindMode].key;
+    ele.innerText = e.key;
     data.keyBind = e.key;
     inKeybindMode = -1;
   }
@@ -53,28 +45,48 @@ document.addEventListener("blur", (e) => {
   ctrlPressed = false;
 });
 
+
+/** @type {HTMLCanvasElement} */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const beatDisplay = document.getElementById("beat-display");
+const userDisplay = document.getElementById("user-count-display");
+const userColorDisplay = document.getElementById("user-color-display");
 /**
  * @typedef DisplayData
  * @property {number} stamp
  * @property {ButtonTypes} type
  * @property {number} idx
+ * @property {string} userColor
  */
 /** @type {DisplayData[]} */
 let displayDatas = [];
+/** @type {string[]} */
+let userColors = [];
 socket.on("update", ({
   type,
   idx,
   count,
-  userCount,
-  self: isSelf
+  self: isSelf,
+  userColor,
+  userColors: _userColors,
 }) => {
   displayDatas.push({
     stamp: new Date().getTime(),
     type,
-    idx
+    idx,
+    userColor
   });
   beatDisplay.innerText = count;
-  userDisplay.innerText = userCount;
+  userColors = _userColors;
+  userDisplay.innerText = userColors.length;
+  let userColorDisplayBg = `linear-gradient(90deg`;
+  for (let i = 0; i < Math.max(2, userColors.length); i++) {
+    userColorDisplayBg += "," + (userColors[i] ?? "#000");
+  }
+  userColorDisplayBg += ")";
+  console.log(userColorDisplayBg);
+  userColorDisplay.style.background = userColorDisplayBg;
 
   if (type === "beat" && !isSelf) {
     new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play().catch(e => e);
@@ -134,20 +146,44 @@ const soundDatas = [
   },
 ];
 const beatButtonContainer = document.getElementById("beat-button-container");
+/**
+ * @typedef BeatButtonElement
+ * @property {HTMLDivElement} name
+ * @property {HTMLDivElement} key
+ */
+/** @type {BeatButtonElement[]} */
+const beatButtonElements = [];
 for (let i = 0; i < soundDatas.length; i++) {
   const soundData = soundDatas[i];
-  const ele = document.createElement("div");
-  ele.innerText = `${soundData.displayName} (${soundData.keyBind})`;
-  ele.style.backgroundColor = soundData.color;
+  /** @type {BeatButtonElement} */
+  const beatButtonElement = {};
+  beatButtonElements.push(beatButtonElement);
+
+  const ele = document.createElement("span");
+  ele.classList.add("beat-button");
+  ele.style.setProperty("--color", soundData.color);
+  beatButtonContainer.appendChild(ele);
+
+  const nameEle = document.createElement("div");
+  beatButtonElement.name = nameEle;
+  nameEle.classList.add("beat-button__name");
+  nameEle.innerText = soundData.displayName;
+  ele.appendChild(nameEle);
+
+  const keyEle = document.createElement("div");
+  beatButtonElement.key = keyEle;
+  keyEle.classList.add("beat-button__key");
+  keyEle.innerText = soundData.keyBind;
+  ele.appendChild(keyEle);
+
   ele.addEventListener("click", function() {
     new Audio(`./resources/sounds/${soundData.fileName}.mp3`).play();
     emitButtonClick("beat", i);
     if (ctrlPressed && inKeybindMode === -1) {
       inKeybindMode = i;
-      this.innerText = `${soundData.displayName} (?)`;
+      beatButtonElement.key.innerText = "?"
     }
   });
-  beatButtonContainer.appendChild(ele);
 }
 
 const emojiLookup = [
@@ -166,34 +202,44 @@ for (let i = 0; i < emojiLookup.length; i++) {
 }
 
 const body = document.getElementsByTagName("body")[0];
-let recivedDispalyRange = 25_000;
+let DISPLAY_DATA_TIME_RANGE = 25_000;
+const TIMELINE_PER = 5000;
 function tick() {
   const time = new Date().getTime();
   const { offsetWidth: WIDTH, offsetHeight: HEIGHT } = body;
+  displayDatas = displayDatas.filter(data => time - data.stamp < DISPLAY_DATA_TIME_RANGE);
+  const changeRangeTo = (30-displayDatas.length/3)*1000;
+  DISPLAY_DATA_TIME_RANGE += Math.sign(changeRangeTo-DISPLAY_DATA_TIME_RANGE)*(DISPLAY_DATA_TIME_RANGE/5000);
+  DISPLAY_DATA_TIME_RANGE = Math.min(25_000, Math.max(5_000, DISPLAY_DATA_TIME_RANGE));
   
   canvas.width = WIDTH;
   canvas.height = HEIGHT/10;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#666";
-  ctx.strokeStyle = "#000";
   ctx.lineWidth = 1;
-  ctx.font = "2vh monospace";
-  for (let i = 0; i < Math.ceil(recivedDispalyRange/5000)+1; i++) {
-    const x = i*canvas.width/Math.ceil(recivedDispalyRange/5000);
-    ctx.fillText(`-${i*5}s`, x-ctx.measureText(`-${i*5}s`).width, 20);
+  ctx.strokeStyle = "#0007";
+  ctx.fillStyle = "#555";
+  ctx.font = "2vh Inconsolata";
+  for (let i = 1; i < Math.ceil(DISPLAY_DATA_TIME_RANGE/TIMELINE_PER)+1; i++) {
+    const xPos = canvas.width/DISPLAY_DATA_TIME_RANGE * i*TIMELINE_PER;
+    const text = `${i*5}s ago`;
+    const textMetrics = ctx.measureText(text);
+    const textWidth = textMetrics.width;
+    const textHeight = textMetrics.fontBoundingBoxDescent;
+    ctx.fillText(text, xPos-textWidth/2, canvas.height-textHeight);
     ctx.beginPath();
-    ctx.moveTo(x, canvas.height);
-    ctx.lineTo(x, 0);
+    ctx.moveTo(xPos, 0);
+    ctx.lineTo(xPos, canvas.height-textHeight*2);
     ctx.stroke();
   }
   
-  displayDatas = displayDatas.filter(data => time - data.stamp < 50_000);
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 1;
+  ctx.shadowBlur = WIDTH/100;
   for (let i = 0; i < displayDatas.length; i++) {
     const data = displayDatas[i];
     const diff = time - data.stamp;
-    const pos = WIDTH*(diff/recivedDispalyRange);
+    const pos = WIDTH*(diff/DISPLAY_DATA_TIME_RANGE);
+    ctx.shadowColor = data.userColor;
     if (data.type === "beat") {
       ctx.strokeStyle = soundDatas[data.idx]?.color;
       ctx.beginPath();
@@ -205,6 +251,7 @@ function tick() {
       ctx.fillText(emoji, pos, ctx.measureText(emoji).actualBoundingBoxAscent);
     }
   }
+  ctx.shadowBlur = 0;
 
   requestAnimationFrame(tick);
 }

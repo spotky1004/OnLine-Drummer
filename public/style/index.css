@@ -27,41 +27,82 @@ body {
 #beat-display {
   font-size: 0.6em;
 }
-#user-display-wrapper {
+#user-count-display-wrapper {
   background-color: #111;
 
   font-size: 1.5em;
 }
-#user-display {
+#user-count-display {
   font-size: 0.6em;
+}
+#user-color-display {
+  height: 0.3vh;
+
+  background: linear-gradient(90deg);
+  background-color: #000;
 }
 
 #beat-button-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  --grid-rows: 3;
+  --grid-cols: 4;
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(var(--grid-rows), 1fr);
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
 
-  height: 40vh;
+  margin: 1vh auto;
+  height: 40vmin;
+  width: calc(40vmin * var(--grid-cols) / var(--grid-rows));
+
+  background-color: #333;
+  border-radius: 1vmin;
+  box-shadow: 0 0 1vmin #000 inset;
+
+  overflow: visible;
 }
-#beat-button-container > div {
-  margin: 0 1vw;
-  width: 20vw;
-  height: 40%;
+#beat-button-container::before {
+  position: absolute;
+  left: 100%;
+  content: "Drums";
+  writing-mode: vertical-rl;
+  text-orientation: sideways;
+  font-weight: bold;
+}
+.beat-button {
+  --color: #000;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2em;
+  position: relative;
+
+  margin: auto;
+  width: 85%;
+  height: 85%;
+
+  background-color: var(--color);
 
   white-space: nowrap;
-
   transition: all ease-out 0.3s;
 }
-#beat-button-container > div:active {
+.beat-button:active {
   filter: brightness(1.6);
 
   transition: all 0s;
+}
+.beat-button > div {
+  position: absolute;
+}
+.beat-button__name {
+  top: 5%;
+  left: 5%;
+
+  font-size: 1.5em;
+  color: #444;
+  mix-blend-mode: difference;
+}
+.beat-button__key {
+  bottom: 5%;
+  right: 5%;
+  
+  color: #fff;
 }
 
 #emoji-button-container {
@@ -75,8 +116,8 @@ body {
 
   background-color: #333;
   border-radius: 1vmin;
-
   box-shadow: 0 0 1vmin #000 inset;
+
   overflow: visible;
 }
 #emoji-button-container::before {
@@ -95,6 +136,7 @@ body {
   align-items: center;
 
   background-color: #111;
+  box-shadow: 0 0 0.3vmin #000;
 
   cursor: pointer;
   transition: all 0.3s;
@@ -102,6 +144,11 @@ body {
 #emoji-button-container > span:active {
   filter: brightness(2);
   transition: all 0s;
+}
+
+#canvas {
+  box-shadow: 0 0 1vmin #000;
+  background-color: #262626;
 }
 
 footer {

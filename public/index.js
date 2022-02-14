@@ -23,7 +23,7 @@ document.addEventListener("keydown", (e) => {
   const idx = soundDatas.findIndex(data => data.keyBind === e.key);
   const data = soundDatas[idx];
   if (typeof data !== "undefined") {
-    new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play();
+    data.audio.cloneNode().play();
     emitButtonClick("beat", idx);
   }
   if (e.key === "Control") {
@@ -88,7 +88,7 @@ socket.on("update", ({
   userColorDisplay.style.background = userColorDisplayBg;
 
   if (type === "beat" && !isSelf) {
-    new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play().catch(e => e);
+    soundDatas[idx].audio.cloneNode().play().catch(e => e);
   }
 });
 
@@ -98,6 +98,7 @@ socket.on("update", ({
  * @property {string} fileName
  * @property {string} displayName
  * @property {string} keyBind
+ * @property {HTMLAudioElement} audio
  */
 /** @type {SoundData[]} */
 const soundDatas = [
@@ -187,6 +188,7 @@ for (let i = 0; i < soundDatas.length; i++) {
   /** @type {BeatButtonElement} */
   const beatButtonElement = {};
   beatButtonElements.push(beatButtonElement);
+  soundData.audio = new Audio(`./resources/sounds/${soundData.fileName}.mp3`);
 
   const ele = document.createElement("span");
   ele.classList.add("beat-button");
@@ -206,7 +208,7 @@ for (let i = 0; i < soundDatas.length; i++) {
   ele.appendChild(keyEle);
 
   ele.addEventListener("click", function() {
-    new Audio(`./resources/sounds/${soundData.fileName}.mp3`).play();
+    soundData.audio.cloneNode().play();
     emitButtonClick("beat", i);
     if (ctrlPressed && inKeybindMode === -1) {
       inKeybindMode = i;

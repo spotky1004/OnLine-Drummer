@@ -1,4 +1,6 @@
-const { Server } = require('socket.io');
+const { Server } = require("socket.io");
+
+const BUTTON_LIMIT_PER_SEC = 10;
 
 let count = 0;
 let userCount = 0;
@@ -11,9 +13,8 @@ module.exports = (server) => {
   io.on("connection", (socket) => {
     socket.join("main");
 
-    let lastSend = new Date().getTime();
-    let lastType = null;
-    let lastIdx = -1;
+    /** @type {number[]} */
+    let buttonClickStamps = [];
     const req = socket.request;
     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
     console.log("New client connection!", ip, socket.id);
@@ -27,14 +28,10 @@ module.exports = (server) => {
       console.error(error);
     });
     socket.on("buttonClick", ({ type, idx }) => {
-      if (
-        lastType === type &&
-        lastIdx === idx &&
-        new Date().getTime() - lastSend < 75
-      ) return;
-      lastSend = new Date().getTime();
-      lastType = type;
-      lastIdx = idx;
+      const time = new Date().getTime();
+      buttonClickStamps = buttonClickStamps.filter(stamp => time - stamp < 1000);
+      if (buttonClickStamps.length > BUTTON_LIMIT_PER_SEC) return;
+      buttonClickStamps.push(time);
       if (type === "beat") count++;
 
       const dataToSend = {

@@ -144,6 +144,36 @@ const soundDatas = [
     color: "#634462",
     keyBind: "l"
   },
+  {
+    fileName: "crash2",
+    displayName: "Crash 2",
+    color: "#d1650d",
+    keyBind: "c"
+  },
+  {
+    fileName: "Htom",
+    displayName: "H Tom",
+    color: "#f23a3a",
+    keyBind: "v"
+  },
+  {
+    fileName: "Mtom",
+    displayName: "M Tom",
+    color: "#f2a23a",
+    keyBind: "b"
+  },
+  {
+    fileName: "Ltom",
+    displayName: "L Tom",
+    color: "#90f23a",
+    keyBind: "n"
+  },
+  {
+    fileName: "stick",
+    displayName: "Stick",
+    color: "#b85107",
+    keyBind: "m"
+  },
 ];
 const beatButtonContainer = document.getElementById("beat-button-container");
 /**

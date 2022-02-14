@@ -130,7 +130,7 @@ for (let i = 0; i < soundDatas.length; i++) {
 const emojiLookup = [
   "👋", "😀", "😲", "😍", "🤔",
   "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣",
-  "🆖", "🆒", "👀", "❤️", "🗯"
+  "🛑", "🤦", "👀", "❤️", "🗯"
 ];
 const emojiButtonContainer = document.getElementById("emoji-button-container");
 for (let i = 0; i < emojiLookup.length; i++) {

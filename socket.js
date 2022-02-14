@@ -12,6 +12,7 @@ module.exports = (server) => {
     socket.join("main");
 
     let lastSend = new Date().getTime();
+    let lastType = null;
     let lastIdx = -1;
     const req = socket.request;
     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -25,23 +26,26 @@ module.exports = (server) => {
     socket.on("error", (error) => {
       console.error(error);
     });
-    socket.on("buttonClick", (buttonIdx) => {
-      if (lastIdx === buttonIdx && new Date().getTime() - lastSend < 75) return;
+    socket.on("buttonClick", ({ type, idx }) => {
+      if (
+        lastType === type &&
+        lastIdx === idx &&
+        new Date().getTime() - lastSend < 75
+      ) return;
       lastSend = new Date().getTime();
-      lastIdx = buttonIdx;
+      lastType = type;
+      lastIdx = idx;
       count++;
-      socket.to("main").emit("update", {
+
+      const dataToSend = {
         count,
-        sound: buttonIdx,
-        self: false,
+        type,
+        idx,
         userCount,
-      });
-      socket.emit("update", {
-        count,
-        sound: buttonIdx,
-        self: true,
-        userCount,
-      });
+      };
+
+      socket.to("main").emit("update", { ...dataToSend, self: false });
+      socket.emit("update", { ...dataToSend, self: true });
     });
   });
 }

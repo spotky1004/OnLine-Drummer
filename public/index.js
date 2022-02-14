@@ -1,6 +1,22 @@
 import io from "./lib/socket.io.esm.min.js";
 const socket = io();
 
+/**
+ * @typedef {"emoji" | "beat"} ButtonTypes
+ */
+
+/**
+ * 
+ * @param {ButtonTypes} type 
+ * @param {*} idx 
+ */
+const emitButtonClick = (type, idx) => {
+  socket.emit("buttonClick", {
+    type,
+    idx
+  });
+}
+
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -13,29 +29,35 @@ document.addEventListener("keydown", (e) => {
   const idx = keyBinds[e.key];
   if (typeof idx !== "undefined") {
     new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play();
-    socket.emit("buttonClick", idx);
+    emitButtonClick("beat", idx);
   }
 })
 
-let count = 0;
 /**
  * @typedef DisplayData
  * @property {number} stamp
- * @property {number} soundIdx
+ * @property {ButtonTypes} type
+ * @property {number} idx
  */
 /** @type {DisplayData[]} */
 let displayDatas = [];
-socket.on("update", (data) => {
+socket.on("update", ({
+  type,
+  idx,
+  count,
+  userCount,
+  self: isSelf
+}) => {
   displayDatas.push({
     stamp: new Date().getTime(),
-    soundIdx: data.sound
+    type,
+    idx
   });
-  count = data.count;
   beatDisplay.innerText = count;
-  userDisplay.innerText = data.userCount;
+  userDisplay.innerText = userCount;
 
-  if (!data.self) {
-    new Audio(`./resources/sounds/${soundDatas[data.sound].fileName}.mp3`).play();
+  if (type === "beat" && isSelf) {
+    new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play().catch(e => e);
   }
 });
 
@@ -91,19 +113,33 @@ const soundDatas = [
     keyBind: "l"
   },
 ];
-const buttonContainer = document.getElementById("button-container");
+const beatButtonContainer = document.getElementById("beat-button-container");
 for (let i = 0; i < soundDatas.length; i++) {
   const soundData = soundDatas[i];
   const ele = document.createElement("div");
   keyBinds[soundData.keyBind] = i;
   ele.innerText = `${soundData.displayName} (${soundData.keyBind})`;
   ele.style.backgroundColor = soundData.color;
-  const idx = i;
   ele.addEventListener("click", () => {
     new Audio(`./resources/sounds/${soundData.fileName}.mp3`).play();
-    socket.emit("buttonClick", idx);
+    emitButtonClick("beat", i);
   });
-  buttonContainer.appendChild(ele);
+  beatButtonContainer.appendChild(ele);
+}
+
+const emojiLookup = [
+  "👋", "😀", "😲", "😍", "🤔",
+  "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣",
+  "🆖", "🆒", "👀", "❤️", "🗯"
+];
+const emojiButtonContainer = document.getElementById("emoji-button-container");
+for (let i = 0; i < emojiLookup.length; i++) {
+  const ele = document.createElement("span");
+  ele.innerText = emojiLookup[i];
+  emojiButtonContainer.appendChild(ele);
+  ele.addEventListener("click", () => {
+    emitButtonClick("emoji", i);
+  });
 }
 
 const body = document.getElementsByTagName("body")[0];
@@ -119,9 +155,10 @@ function tick() {
   ctx.fillStyle = "#666";
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 1;
-  for (let i = 0; i < Math.ceil(recivedDispalyRange/5000); i++) {
+  ctx.font = "2vh monospace";
+  for (let i = 0; i < Math.ceil(recivedDispalyRange/5000)+1; i++) {
     const x = i*canvas.width/Math.ceil(recivedDispalyRange/5000);
-    ctx.fillText(`-${i*5}s`, x+5, 10);
+    ctx.fillText(`-${i*5}s`, x-ctx.measureText(`-${i*5}s`).width, 20);
     ctx.beginPath();
     ctx.moveTo(x, canvas.height);
     ctx.lineTo(x, 0);
@@ -134,11 +171,16 @@ function tick() {
     const data = displayDatas[i];
     const diff = time - data.stamp;
     const pos = WIDTH*(diff/recivedDispalyRange);
-    ctx.strokeStyle = soundDatas[data.soundIdx]?.color;
-    ctx.beginPath();
-    ctx.moveTo(pos, canvas.height);
-    ctx.lineTo(pos, 0);
-    ctx.stroke();
+    if (data.type === "beat") {
+      ctx.strokeStyle = soundDatas[data.idx]?.color;
+      ctx.beginPath();
+      ctx.moveTo(pos, canvas.height);
+      ctx.lineTo(pos, 0);
+      ctx.stroke();
+    } else {
+      const emoji = emojiLookup[data.idx];
+      ctx.fillText(emoji, pos, ctx.measureText(emoji).actualBoundingBoxAscent);
+    }
   }
 
   requestAnimationFrame(tick);

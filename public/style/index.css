@@ -36,7 +36,7 @@ body {
   font-size: 0.6em;
 }
 
-#button-container {
+#beat-button-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -44,7 +44,7 @@ body {
 
   height: 40vh;
 }
-#button-container > div {
+#beat-button-container > div {
   margin: 0 1vw;
   width: 20vw;
   height: 40%;
@@ -58,8 +58,48 @@ body {
 
   transition: all ease-out 0.3s;
 }
-#button-container > div:active {
+#beat-button-container > div:active {
   filter: brightness(1.6);
 
+  transition: all 0s;
+}
+
+#emoji-button-container {
+  position: relative;
+  margin: 3vh auto 0 auto;
+  width: 30vmin;
+  height: 15vmin;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+
+  background-color: #333;
+  border-radius: 1vmin;
+
+  box-shadow: 0 0 1vmin #000 inset;
+  overflow: visible;
+}
+#emoji-button-container::before {
+  position: absolute;
+  content: "Emojis";
+  font-weight: bold;
+  bottom: 100%;
+}
+#emoji-button-container > span {
+  margin: auto;
+  aspect-ratio: 1 / 1;
+  height: 70%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #111;
+
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#emoji-button-container > span:active {
+  filter: brightness(2);
   transition: all 0s;
 }

@@ -33,6 +33,10 @@ document.addEventListener("keydown", (e) => {
     const ele = beatButtonElements[inKeybindMode].key;
     ele.innerText = e.key;
     data.keyBind = e.key;
+    localStorage.setItem(
+      "drumKeybind",
+      Object.entries(soundDatas).map(([,data]) => data.keyBind).join("&")
+    );
     inKeybindMode = -1;
   }
 });
@@ -175,6 +179,7 @@ const soundDatas = [
     keyBind: "m"
   },
 ];
+const keybindSave = localStorage.getItem("drumKeybind") ? localStorage.getItem("drumKeybind").split("&") : [];
 const beatButtonContainer = document.getElementById("beat-button-container");
 /**
  * @typedef BeatButtonElement
@@ -185,16 +190,18 @@ const beatButtonContainer = document.getElementById("beat-button-container");
 const beatButtonElements = [];
 for (let i = 0; i < soundDatas.length; i++) {
   const soundData = soundDatas[i];
-  /** @type {BeatButtonElement} */
-  const beatButtonElement = {};
-  beatButtonElements.push(beatButtonElement);
+  soundData.keyBind = keybindSave[i] ?? soundData.keyBind;
   fetch(`./resources/sounds/${soundData.fileName}.mp3`)
     .then((res) => res.blob())
     .then((blob) => {
       soundData.audio = URL.createObjectURL(blob);
     })
     .catch((err) => console.error(err));
-
+  
+  /** @type {BeatButtonElement} */
+  const beatButtonElement = {};
+  beatButtonElements.push(beatButtonElement);
+  
   const ele = document.createElement("span");
   ele.classList.add("beat-button");
   ele.style.setProperty("--color", soundData.color);

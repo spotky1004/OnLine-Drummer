@@ -35,7 +35,7 @@ module.exports = (server) => {
       lastSend = new Date().getTime();
       lastType = type;
       lastIdx = idx;
-      count++;
+      if (type === "beat") count++;
 
       const dataToSend = {
         count,

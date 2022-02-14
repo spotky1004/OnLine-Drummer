@@ -23,7 +23,7 @@ document.addEventListener("keydown", (e) => {
   const idx = soundDatas.findIndex(data => data.keyBind === e.key);
   const data = soundDatas[idx];
   if (typeof data !== "undefined") {
-    data.audio.cloneNode().play();
+    new Audio(data.audio).play();
     emitButtonClick("beat", idx);
   }
   if (e.key === "Control") {
@@ -88,7 +88,7 @@ socket.on("update", ({
   userColorDisplay.style.background = userColorDisplayBg;
 
   if (type === "beat" && !isSelf) {
-    soundDatas[idx].audio.cloneNode().play().catch(e => e);
+    new Audio(soundDatas[idx].audio).play().catch(e => e);
   }
 });
 
@@ -98,7 +98,7 @@ socket.on("update", ({
  * @property {string} fileName
  * @property {string} displayName
  * @property {string} keyBind
- * @property {HTMLAudioElement} audio
+ * @property {*} audio
  */
 /** @type {SoundData[]} */
 const soundDatas = [
@@ -188,7 +188,12 @@ for (let i = 0; i < soundDatas.length; i++) {
   /** @type {BeatButtonElement} */
   const beatButtonElement = {};
   beatButtonElements.push(beatButtonElement);
-  soundData.audio = new Audio(`./resources/sounds/${soundData.fileName}.mp3`);
+  fetch(`./resources/sounds/${soundData.fileName}.mp3`)
+    .then((res) => res.blob())
+    .then((blob) => {
+      soundData.audio = URL.createObjectURL(blob);
+    })
+    .catch((err) => console.error(err));
 
   const ele = document.createElement("span");
   ele.classList.add("beat-button");
@@ -208,7 +213,7 @@ for (let i = 0; i < soundDatas.length; i++) {
   ele.appendChild(keyEle);
 
   ele.addEventListener("click", function() {
-    soundData.audio.cloneNode().play();
+    new Audio(soundData.audio).play();
     emitButtonClick("beat", i);
     if (ctrlPressed && inKeybindMode === -1) {
       inKeybindMode = i;

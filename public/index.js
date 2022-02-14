@@ -56,7 +56,7 @@ socket.on("update", ({
   beatDisplay.innerText = count;
   userDisplay.innerText = userCount;
 
-  if (type === "beat" && isSelf) {
+  if (type === "beat" && !isSelf) {
     new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play().catch(e => e);
   }
 });

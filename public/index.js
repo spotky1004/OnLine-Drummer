@@ -264,24 +264,33 @@ function tick() {
   }
   
   ctx.lineWidth = 1;
-  ctx.shadowBlur = WIDTH/100;
+  ctx.shadowBlur = 1;
+  ctx.shadowColor = "#fff";
   for (let i = 0; i < displayDatas.length; i++) {
     const data = displayDatas[i];
     const diff = time - data.stamp;
-    const pos = WIDTH*(diff/DISPLAY_DATA_TIME_RANGE);
-    ctx.shadowColor = data.userColor;
+    const xPos = WIDTH*(diff/DISPLAY_DATA_TIME_RANGE);
+    ctx.fillStyle = data.userColor;
+    const text = userColors.findIndex(color => color === data.userColor)+1;
+    const textMetrics = ctx.measureText(text);
+    const textWidth = textMetrics.width;
+    const textHeight = textMetrics.fontBoundingBoxDescent;
     if (data.type === "beat") {
       ctx.strokeStyle = soundDatas[data.idx]?.color;
       ctx.beginPath();
-      ctx.moveTo(pos, canvas.height);
-      ctx.lineTo(pos, 0);
+      ctx.moveTo(xPos, canvas.height);
+      ctx.lineTo(xPos, 0);
       ctx.stroke();
+      ctx.fillText(text, xPos-textWidth/2, canvas.height-textHeight);
     } else {
       const emoji = emojiLookup[data.idx];
-      ctx.fillText(emoji, pos, ctx.measureText(emoji).actualBoundingBoxAscent);
+      const emojiMetrics = ctx.measureText(emoji);
+      const emojiWidth = emojiMetrics.width;
+      const emojiHeight = emojiMetrics.fontBoundingBoxDescent;
+      ctx.fillText(emoji, xPos, ctx.measureText(emoji).actualBoundingBoxAscent);
+      ctx.fillText(text, xPos+emojiWidth-textWidth/2, textHeight+emojiHeight+20);
     }
   }
-  ctx.shadowBlur = 0;
 
   requestAnimationFrame(tick);
 }

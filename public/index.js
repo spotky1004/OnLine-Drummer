@@ -85,7 +85,6 @@ socket.on("update", ({
     userColorDisplayBg += "," + (userColors[i] ?? "#000");
   }
   userColorDisplayBg += ")";
-  console.log(userColorDisplayBg);
   userColorDisplay.style.background = userColorDisplayBg;
 
   if (type === "beat" && !isSelf) {

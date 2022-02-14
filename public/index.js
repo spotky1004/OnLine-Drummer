@@ -25,13 +25,33 @@ const userDisplay = document.getElementById("user-display");
 
 /** @type {Object<string, number>} */
 let keyBinds = {};
+let inKeybindMode = -1;
+let ctrlPressed = false;
 document.addEventListener("keydown", (e) => {
-  const idx = keyBinds[e.key];
-  if (typeof idx !== "undefined") {
+  const idx = soundDatas.findIndex(data => data.keyBind === e.key);
+  const data = soundDatas[idx];
+  if (typeof data !== "undefined") {
     new Audio(`./resources/sounds/${soundDatas[idx].fileName}.mp3`).play();
     emitButtonClick("beat", idx);
   }
-})
+  if (e.key === "Control") {
+    ctrlPressed = true;
+  } else if (inKeybindMode !== -1) {
+    const data = soundDatas[inKeybindMode];
+    const ele = document.querySelector(`#beat-button-container > div:nth-child(${inKeybindMode+1})`);
+    ele.innerText = `${data.displayName} (${e.key})`;
+    data.keyBind = e.key;
+    inKeybindMode = -1;
+  }
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "Control") {
+    ctrlPressed = false;
+  }
+});
+document.addEventListener("blur", (e) => {
+  ctrlPressed = false;
+});
 
 /**
  * @typedef DisplayData
@@ -117,12 +137,15 @@ const beatButtonContainer = document.getElementById("beat-button-container");
 for (let i = 0; i < soundDatas.length; i++) {
   const soundData = soundDatas[i];
   const ele = document.createElement("div");
-  keyBinds[soundData.keyBind] = i;
   ele.innerText = `${soundData.displayName} (${soundData.keyBind})`;
   ele.style.backgroundColor = soundData.color;
-  ele.addEventListener("click", () => {
+  ele.addEventListener("click", function() {
     new Audio(`./resources/sounds/${soundData.fileName}.mp3`).play();
     emitButtonClick("beat", i);
+    if (ctrlPressed && inKeybindMode === -1) {
+      inKeybindMode = i;
+      this.innerText = `${soundData.displayName} (?)`;
+    }
   });
   beatButtonContainer.appendChild(ele);
 }

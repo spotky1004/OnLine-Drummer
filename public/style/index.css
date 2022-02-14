@@ -103,3 +103,41 @@ body {
   filter: brightness(2);
   transition: all 0s;
 }
+
+footer {
+  position: absolute;
+  bottom: 0;
+
+  padding: 0 5vw;
+  width: 90vw;
+  height: 3vh;
+
+  display: flex;
+  justify-content: space-between;
+  
+  background-color: #000;
+}
+footer > * {
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+}
+#link-github {
+  background: linear-gradient(
+    90deg,
+    #fff 50%,
+    #aed88c 50%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200%;
+  border-bottom: 1px solid #fff;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+#link-github:hover {
+  background-position: 100%;
+  font-weight: bolder;
+}

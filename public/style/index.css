@@ -108,11 +108,11 @@ body {
 #emoji-button-container {
   position: relative;
   margin: 3vh auto 0 auto;
-  width: 30vmin;
+  width: 35vmin;
   height: 20vmin;
 
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
 
   background-color: #333;
   border-radius: 1vmin;

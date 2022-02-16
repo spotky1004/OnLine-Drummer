@@ -1,11 +1,21 @@
 const { Server } = require("socket.io");
 const crypto = require("crypto");
+const getCollection = require("./db.js");
 
 const BUTTON_LIMIT_PER_SEC = 10;
 
+/** @type {Awaited<ReturnType<typeof getCollection>>>} */
+let collection;
 let count = 0;
+getCollection()
+  .then(async (_collection) => {
+    collection = _collection;
+    const doc = await collection.findOne({ _id: "meta" });
+    count = doc.count;
+  });
 /** @type {string[]} */
 let userColors = [];
+let lastSave = new Date().getTime() + 5000;
 
 module.exports = (server) => {
   const io = new Server(server, {
@@ -34,6 +44,13 @@ module.exports = (server) => {
       if (buttonClickStamps.length > BUTTON_LIMIT_PER_SEC) return;
       buttonClickStamps.push(time);
       if (type === "beat") count++;
+      if (time - lastSave > 5000) {
+        collection.updateOne(
+          { _id: "meta" },
+          { $set: { _id: "meta", count } },
+          { upsert: true }
+        );
+      }
 
       const dataToSend = {
         count,

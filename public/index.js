@@ -102,7 +102,7 @@ socket.on("update", ({
  * @property {string} fileName
  * @property {string} displayName
  * @property {string} keyBind
- * @property {*} audio
+ * @property {string} audio
  */
 /** @type {SoundData[]} */
 const soundDatas = [
@@ -220,7 +220,15 @@ for (let i = 0; i < soundDatas.length; i++) {
   ele.appendChild(keyEle);
 
   ele.addEventListener("click", function() {
-    new Audio(soundData.audio).play();
+    let audioElement = new Audio(soundData.audio);
+    let audioCtx = new AudioContext();
+    const gainNode = audioCtx.createGain();
+    const source = audioCtx.createMediaElementSource(audioElement);
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    source.connect(gainNode).connect(audioCtx.destination);
+    audioElement.play();
+    
     emitButtonClick("beat", i);
     if (ctrlPressed && inKeybindMode === -1) {
       inKeybindMode = i;

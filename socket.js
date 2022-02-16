@@ -50,6 +50,7 @@ module.exports = (server) => {
           { $set: { _id: "meta", count } },
           { upsert: true }
         );
+        lastSave = time;
       }
 
       const dataToSend = {
